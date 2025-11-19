@@ -701,6 +701,8 @@ export class SnapshotManager implements TrackableJobExecutions, OnApplicationShu
           case Array.isArray(snapshotInfo.entrypoint):
             entrypoint = snapshotInfo.entrypoint
             break
+          default:
+            log.warn(`Unexpected entrypoint type for snapshot ${snapshot.id}: ${typeof snapshotInfo.entrypoint}`)
         }
       }
 
