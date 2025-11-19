@@ -31,7 +31,7 @@ type Config struct {
 	AWSSecretAccessKey     string `envconfig:"AWS_SECRET_ACCESS_KEY"`
 	AWSDefaultBucket       string `envconfig:"AWS_DEFAULT_BUCKET"`
 	ResourceLimitsDisabled bool   `envconfig:"RESOURCE_LIMITS_DISABLED"`
-	IsDaemonMainEntrypoint bool   `envconfig:"IS_DAEMON_MAIN_ENTRYPOINT"`
+	UseDaemonEntrypoint    bool   `envconfig:"USE_DAEMON_ENTRYPOINT"`
 }
 
 var DEFAULT_API_PORT int = 8080

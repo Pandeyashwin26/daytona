@@ -29,7 +29,7 @@ type DockerClientConfig struct {
 	ComputerUsePluginPath  string
 	NetRulesManager        *netrules.NetRulesManager
 	ResourceLimitsDisabled bool
-	IsDaemonMainEntryPoint bool
+	UseDaemonEntrypoint    bool
 }
 
 func NewDockerClient(config DockerClientConfig) *DockerClient {
@@ -46,7 +46,7 @@ func NewDockerClient(config DockerClientConfig) *DockerClient {
 		computerUsePluginPath:  config.ComputerUsePluginPath,
 		netRulesManager:        config.NetRulesManager,
 		resourceLimitsDisabled: config.ResourceLimitsDisabled,
-		isDaemonMainEntrypoint: config.IsDaemonMainEntryPoint,
+		useDaemonEntrypoint:    config.UseDaemonEntrypoint,
 	}
 }
 
@@ -68,7 +68,7 @@ type DockerClient struct {
 	computerUsePluginPath  string
 	netRulesManager        *netrules.NetRulesManager
 	resourceLimitsDisabled bool
-	isDaemonMainEntrypoint bool
+	useDaemonEntrypoint    bool
 }
 
 // retryWithExponentialBackoff executes a function with exponential backoff retry logic

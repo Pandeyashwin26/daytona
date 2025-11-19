@@ -52,7 +52,7 @@ func (d *DockerClient) getContainerCreateConfig(sandboxDto dto.CreateSandboxDTO)
 	workDir := ""
 	cmd := []string{}
 	entrypoint := sandboxDto.Entrypoint
-	if d.isDaemonMainEntrypoint {
+	if d.useDaemonEntrypoint {
 		// Inspect image
 		image, _, _ := d.apiClient.ImageInspectWithRaw(context.Background(), sandboxDto.Snapshot)
 		if image.Config.WorkingDir != "" {

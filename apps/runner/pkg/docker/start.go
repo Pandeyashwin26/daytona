@@ -68,7 +68,7 @@ func (d *DockerClient) Start(ctx context.Context, containerId string, metadata m
 		return err
 	}
 
-	if !d.isDaemonMainEntrypoint {
+	if !d.useDaemonEntrypoint {
 		processesCtx := context.Background()
 		go func() {
 			if err := d.startDaytonaDaemon(processesCtx, containerId, c.Config.WorkingDir); err != nil {
