@@ -47,6 +47,7 @@ import { TypedConfigService } from '../../config/typed-config.service'
 import { RequireFlagsEnabled } from '@openfeature/nestjs-sdk'
 import { OrGuard } from '../../auth/or.guard'
 import { OtelProxyGuard } from '../../auth/otel-proxy.guard'
+import { OtelConfigDto } from '../dto/otel-config.dto'
 
 @ApiTags('organizations')
 @Controller('organizations')
@@ -474,6 +475,32 @@ export class OrganizationController {
     }
 
     return OrganizationDto.fromOrganization(organization)
+  }
+
+  @Get('/otel-config/by-sandbox-auth-token/:authToken')
+  @ApiOperation({
+    summary: 'Get organization OTEL config by sandbox auth token',
+    operationId: 'getOrganizationOtelConfigBySandboxAuthToken',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'OTEL Config',
+    type: OtelConfigDto,
+  })
+  @ApiParam({
+    name: 'authToken',
+    description: 'Sandbox Auth Token',
+    type: 'string',
+  })
+  @RequiredApiRole([SystemRole.ADMIN, 'otel-proxy'])
+  @UseGuards(OrGuard([SystemActionGuard, OtelProxyGuard]))
+  async getOtelConfigBySandboxAuthToken(@Param('authToken') authToken: string): Promise<OtelConfigDto> {
+    const otelConfigDto = await this.organizationService.getOtelConfig(authToken)
+    if (!otelConfigDto) {
+      throw new NotFoundException(`Organization OTEL config with sandbox auth token ${authToken} not found`)
+    }
+
+    return otelConfigDto
   }
 
   @Post('/:organizationId/sandbox-default-limited-network-egress')

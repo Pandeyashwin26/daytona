@@ -222,6 +222,10 @@ const configuration = {
   otelProxy: {
     apiKey: process.env.OTEL_PROXY_API_KEY,
   },
+  encryption: {
+    key: process.env.ENCRYPTION_KEY,
+    salt: process.env.ENCRYPTION_SALT,
+  },
 }
 
 export { configuration }

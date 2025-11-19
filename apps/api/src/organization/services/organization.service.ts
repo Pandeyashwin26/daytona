@@ -42,6 +42,8 @@ import { setTimeout } from 'timers/promises'
 import { TypedConfigService } from '../../config/typed-config.service'
 import { LogExecution } from '../../common/decorators/log-execution.decorator'
 import { WithInstrumentation } from '../../common/decorators/otel.decorator'
+import { EncryptionService } from '../../encryption/encryption.service'
+import { OtelConfigDto } from '../dto/otel-config.dto'
 
 @Injectable()
 export class OrganizationService implements OnModuleInit, TrackableJobExecutions, OnApplicationShutdown {
@@ -60,6 +62,7 @@ export class OrganizationService implements OnModuleInit, TrackableJobExecutions
     private readonly eventEmitter: EventEmitter2,
     private readonly configService: TypedConfigService,
     private readonly redisLockProvider: RedisLockProvider,
+    private readonly encryptionService: EncryptionService,
   ) {
     this.defaultOrganizationQuota = this.configService.getOrThrow('defaultOrganizationQuota')
     this.defaultSandboxLimitedNetworkEgress = this.configService.getOrThrow(
@@ -227,9 +230,69 @@ export class OrganizationService implements OnModuleInit, TrackableJobExecutions
     if (!organization) {
       throw new NotFoundException(`Organization with ID ${organizationId} not found`)
     }
-    organization._experimentalConfig = experimentalConfig
+    organization._experimentalConfig = await this.validatedExperimentalConfig(experimentalConfig)
 
     await this.organizationRepository.save(organization)
+  }
+
+  async getOtelConfig(organizationId: string): Promise<OtelConfigDto | null> {
+    const organization = await this.organizationRepository.findOne({ where: { id: organizationId } })
+    if (!organization) {
+      throw new NotFoundException(`Organization with ID ${organizationId} not found`)
+    }
+
+    if (!organization._experimentalConfig || !organization._experimentalConfig.otel) {
+      return null
+    }
+
+    const otelConfig = organization._experimentalConfig.otel
+    const decryptedHeaders: Record<string, string> = {}
+    if (otelConfig.headers && typeof otelConfig.headers === 'object') {
+      for (const [key, value] of Object.entries(otelConfig.headers)) {
+        if (typeof key === 'string' && key.trim() && typeof value === 'string' && value.trim()) {
+          decryptedHeaders[key] = await this.encryptionService.decrypt(value)
+        }
+      }
+    }
+
+    return {
+      endpoint: otelConfig.endpoint,
+      headers: Object.keys(decryptedHeaders).length > 0 ? decryptedHeaders : undefined,
+    }
+  }
+
+  private async validatedExperimentalConfig(
+    experimentalConfig: Record<string, any> | null,
+  ): Promise<Record<string, any> | null> {
+    if (!experimentalConfig) {
+      return null
+    }
+
+    if (!experimentalConfig.otel) {
+      return experimentalConfig
+    }
+
+    const otelConfig = experimentalConfig.otel
+    if (typeof otelConfig.endpoint !== 'string' || !otelConfig.endpoint.trim()) {
+      throw new ForbiddenException('Invalid OpenTelemetry endpoint')
+    }
+
+    if (otelConfig.headers && typeof otelConfig.headers === 'object') {
+      const headers: Record<string, string> = {}
+      for (const [key, value] of Object.entries(otelConfig.headers)) {
+        if (typeof key === 'string' && key.trim() && typeof value === 'string' && value.trim()) {
+          headers[key] = await this.encryptionService.encrypt(value)
+        }
+      }
+      otelConfig.headers = headers
+    } else {
+      otelConfig.headers = {}
+    }
+
+    return {
+      ...experimentalConfig,
+      otel: otelConfig,
+    }
   }
 
   private async createWithEntityManager(

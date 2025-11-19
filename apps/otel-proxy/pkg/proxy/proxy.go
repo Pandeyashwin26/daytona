@@ -20,16 +20,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type OtelEndpoint struct {
-	Endpoint string            `json:"endpoint"`
-	Headers  map[string]string `json:"headers"`
-}
-
 type Proxy struct {
 	config *config.Config
 
 	apiclient              *apiclient.APIClient
-	authTokenEndpointCache common_cache.ICache[OtelEndpoint]
+	authTokenEndpointCache common_cache.ICache[apiclient.OtelConfig]
 }
 
 func StartProxy(config *config.Config) error {
@@ -54,12 +49,12 @@ func StartProxy(config *config.Config) error {
 
 	if config.Redis != nil {
 		var err error
-		proxy.authTokenEndpointCache, err = common_cache.NewRedisCache[OtelEndpoint](config.Redis, "otel-proxy:auth-token-endpoint:")
+		proxy.authTokenEndpointCache, err = common_cache.NewRedisCache[apiclient.OtelConfig](config.Redis, "otel-proxy:auth-token-endpoint:")
 		if err != nil {
 			return err
 		}
 	} else {
-		proxy.authTokenEndpointCache = common_cache.NewMapCache[OtelEndpoint]()
+		proxy.authTokenEndpointCache = common_cache.NewMapCache[apiclient.OtelConfig]()
 	}
 
 	router := gin.New()

@@ -52,6 +52,8 @@ import type { OrganizationUsageOverview } from '../models'
 // @ts-ignore
 import type { OrganizationUser } from '../models'
 // @ts-ignore
+import type { OtelConfig } from '../models'
+// @ts-ignore
 import type { UpdateOrganizationInvitation } from '../models'
 // @ts-ignore
 import type { UpdateOrganizationMemberAccess } from '../models'
@@ -612,6 +614,49 @@ export const OrganizationsApiAxiosParamCreator = function (configuration?: Confi
       options: RawAxiosRequestConfig = {},
     ): Promise<RequestArgs> => {
       const localVarPath = `/organizations/invitations/count`
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL)
+      let baseOptions
+      if (configuration) {
+        baseOptions = configuration.baseOptions
+      }
+
+      const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options }
+      const localVarHeaderParameter = {} as any
+      const localVarQueryParameter = {} as any
+
+      // authentication bearer required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+      // authentication oauth2 required
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter)
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {}
+      localVarRequestOptions.headers = { ...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers }
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      }
+    },
+    /**
+     *
+     * @summary Get organization OTEL config by sandbox auth token
+     * @param {string} authToken Sandbox Auth Token
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getOrganizationOtelConfigBySandboxAuthToken: async (
+      authToken: string,
+      options: RawAxiosRequestConfig = {},
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'authToken' is not null or undefined
+      assertParamExists('getOrganizationOtelConfigBySandboxAuthToken', 'authToken', authToken)
+      const localVarPath = `/organizations/otel-config/by-sandbox-auth-token/{authToken}`.replace(
+        `{${'authToken'}}`,
+        encodeURIComponent(String(authToken)),
+      )
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL)
       let baseOptions
@@ -1680,6 +1725,34 @@ export const OrganizationsApiFp = function (configuration?: Configuration) {
     },
     /**
      *
+     * @summary Get organization OTEL config by sandbox auth token
+     * @param {string} authToken Sandbox Auth Token
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async getOrganizationOtelConfigBySandboxAuthToken(
+      authToken: string,
+      options?: RawAxiosRequestConfig,
+    ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OtelConfig>> {
+      const localVarAxiosArgs = await localVarAxiosParamCreator.getOrganizationOtelConfigBySandboxAuthToken(
+        authToken,
+        options,
+      )
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0
+      const localVarOperationServerBasePath =
+        operationServerMap['OrganizationsApi.getOrganizationOtelConfigBySandboxAuthToken']?.[
+          localVarOperationServerIndex
+        ]?.url
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration,
+        )(axios, localVarOperationServerBasePath || basePath)
+    },
+    /**
+     *
      * @summary Get organization current usage overview
      * @param {string} organizationId Organization ID
      * @param {*} [options] Override http request option.
@@ -2263,6 +2336,21 @@ export const OrganizationsApiFactory = function (
     },
     /**
      *
+     * @summary Get organization OTEL config by sandbox auth token
+     * @param {string} authToken Sandbox Auth Token
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getOrganizationOtelConfigBySandboxAuthToken(
+      authToken: string,
+      options?: RawAxiosRequestConfig,
+    ): AxiosPromise<OtelConfig> {
+      return localVarFp
+        .getOrganizationOtelConfigBySandboxAuthToken(authToken, options)
+        .then((request) => request(axios, basePath))
+    },
+    /**
+     *
      * @summary Get organization current usage overview
      * @param {string} organizationId Organization ID
      * @param {*} [options] Override http request option.
@@ -2687,6 +2775,20 @@ export class OrganizationsApi extends BaseAPI {
   public getOrganizationInvitationsCountForAuthenticatedUser(options?: RawAxiosRequestConfig) {
     return OrganizationsApiFp(this.configuration)
       .getOrganizationInvitationsCountForAuthenticatedUser(options)
+      .then((request) => request(this.axios, this.basePath))
+  }
+
+  /**
+   *
+   * @summary Get organization OTEL config by sandbox auth token
+   * @param {string} authToken Sandbox Auth Token
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   * @memberof OrganizationsApi
+   */
+  public getOrganizationOtelConfigBySandboxAuthToken(authToken: string, options?: RawAxiosRequestConfig) {
+    return OrganizationsApiFp(this.configuration)
+      .getOrganizationOtelConfigBySandboxAuthToken(authToken, options)
       .then((request) => request(this.axios, this.basePath))
   }
 

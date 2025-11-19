@@ -18,7 +18,7 @@ import (
 //	@Tags			server
 //	@Produce		json
 //	@Param			request	body		InitializeRequest	true	"Initialization request"
-//	@Success		200	{object} map[string]string
+//	@Success		200		{object}	map[string]string
 //	@Router			/init [post]
 //
 //	@id				Initialize
