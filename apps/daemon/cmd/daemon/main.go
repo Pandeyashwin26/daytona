@@ -44,13 +44,14 @@ func main() {
 
 	// Execute passed arguments as command
 	args := os.Args[1:]
-	if len(args) > 0 && args[0] != "--work-dir" {
+	if len(args) > 0 {
 		cmd := exec.Command(args[0], args[1:]...)
 		cmd.Stdout = &util.PrefixedWriter{Prefix: "[ENTRYPOINT] ", Writer: os.Stdout}
 		cmd.Stderr = &util.PrefixedWriter{Prefix: "[ENTRYPOINT] ", Writer: os.Stderr}
 
 		// Start command and wait for it in background to prevent zombie process
-		if err := cmd.Start(); err != nil {
+		err := cmd.Start()
+		if err != nil {
 			log.Errorf("failed to start command: %v", err)
 		} else {
 			go func() {
